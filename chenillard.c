@@ -15,7 +15,7 @@ static void generate_file_name_led_x(int x){
     int j = snprintf(fileName, strlen(base_url), base_url , x);
 }
 
-static void turn_on_led_x(int x){
+static void turn_on_led_x(){
     FILE * output_file = fopen(fileName, "w+");
     if (!output_file) {
         perror("fopen");
@@ -25,13 +25,13 @@ static void turn_on_led_x(int x){
     fclose(output_file);    
 }
 
-static void turn_off_led_x(int x){
+static void turn_off_led_x(){
     FILE * output_file = fopen(fileName, "w+");
     if (!output_file) {
         perror("fopen");
         exit(EXIT_FAILURE);
     }
-    fwrite("0", 1, strlen("1"), output_file);
+    fwrite("0", 1, strlen("0"), output_file);
     fclose(output_file);    
 }
 
@@ -44,12 +44,11 @@ int main(int arc, char* argv[]){
     int i;
     printf("Starting Chenillard \r\n");
     while(1){
-        i=0;
-        for(i=0; i<NUMBER_OF_LED; i++){
+        for(i = 0; i < NUMBER_OF_LED; i++){
             generate_file_name_led_x(i);
-            turn_on_led_x(i);
-            delay(DELAY);
-            turn_off_led_x(i);
+            turn_on_led_x();
+            delay(DELAY); // DELAY*10 000 = 10 000 000 empty for loop cycles
+            turn_off_led_x();
         }
     }
     return 1;
