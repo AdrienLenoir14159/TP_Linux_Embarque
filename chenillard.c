@@ -5,51 +5,47 @@
 #include <unistd.h>
 
 
-#define NUMBER_OF_LED 10
-#define DELAY 1000
+#define NBR_LEDS 10
+#define DELAY 10000000
+#define EXIT_WHEN_POWER_ON 2
+#define EXIT_WHEN_POWER_OFF 3
 
-static char fileName[50];
+static char file[100];
+char* directory = "/sys/class/leds/fpga_led%d/brightness";
 
-static void generate_file_name_led_x(int x){
-    char* base_url = "/sys/class/leds/fpga_led%d/brightness";
-    int j = snprintf(fileName, strlen(base_url), base_url , x);
+static void change_led_file(int n){ // Changes current led file to led<x> file
+    snprintf(file, strlen(directory), directory , n);
 }
 
-static void turn_on_led_x(){
-    FILE * output_file = fopen(fileName, "w+");
+static void power_ON_led(){ // Powers ON the led linked to the currently used file
+    FILE * output_file = fopen(file, "w+");
     if (!output_file) {
         perror("fopen");
-        exit(EXIT_FAILURE);
+        exit(EXIT_WHEN_POWER_ON); // Exit code : 2
     }
     fwrite("1", 1, strlen("1"), output_file);
     fclose(output_file);    
 }
 
-static void turn_off_led_x(){
-    FILE * output_file = fopen(fileName, "w+");
+static void power_OFF_led(){ // Powers OFF the led linked to the currently used file
+    FILE * output_file = fopen(file, "w+");
     if (!output_file) {
         perror("fopen");
-        exit(EXIT_FAILURE);
+        exit(EXIT_WHEN_POWER_OFF); // Exit code : 3
     }
     fwrite("0", 1, strlen("0"), output_file);
     fclose(output_file);    
 }
 
-static void delay(int x){
-    int i;
-    for(i=0; i<x*10000; i++);
-}
-
 int main(int arc, char* argv[]){
-    int i;
-    printf("Starting Chenillard \r\n");
+    printf("\r\n==== Starting Chenillard ====\r\n");
     while(1){
-        for(i = 0; i < NUMBER_OF_LED; i++){
-            generate_file_name_led_x(i);
-            turn_on_led_x();
-            delay(DELAY); // DELAY*10 000 = 10 000 000 empty for loop cycles
-            turn_off_led_x();
+        for(int indice_LED = 0; indice_LED < NBR_LEDS; indice_LED++){
+            change_led_file(indice_LED);
+            power_ON_led();
+            for(int d = 0; d < DELAY; d++); // Artificial delay
+            power_OFF_led();
         }
     }
-    return 1;
+    return 0;
 }
